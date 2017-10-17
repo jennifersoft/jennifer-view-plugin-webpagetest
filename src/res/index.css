@@ -1,0 +1,8 @@
+#pagetest-main {
+}
+
+#pagetest-main .txlink {
+    color: mediumpurple;
+    cursor: pointer;
+    font-weight: bold;
+}

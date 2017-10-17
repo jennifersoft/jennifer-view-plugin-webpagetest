@@ -1,0 +1,111 @@
+<div id="pagetest-main">
+    <div class="navbar">
+        <div class="inline">
+            Domain
+            <div id="ext_domain" class="combo">
+                <a class="btn small">Select...</a>
+                <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                <ul></ul>
+            </div>
+        </div>
+        <div class="inline">
+            URL
+            <input id="ext_host" type="text" class="input small" style="width: 200px;" />
+
+            <div id="ext_path" class="combo">
+                <a class="btn small">Select...</a>
+                <a class="btn small toggle"><i class="icon-arrow2"></i></a>
+                <ul></ul>
+            </div>
+
+            <div id="ext_path_tail" class="group" style="display: none;">
+                <input type="text" class="input small" style="width: 279px;" />
+                <a class="btn small"><i class="icon-refresh2"></i></a>
+            </div>
+        </div>
+        <div class="inline">
+            <a id="ext_test" class="btn small">Test</a>
+        </div>
+    </div>
+
+    <div id="ext_top_section" class="row" style="margin-top: 15px; display: none;">
+        <h3>Section Chart</h3>
+
+        <div id="ext_section"></div>
+    </div>
+
+    <div class="row" style="margin-top: 15px;">
+        <h3>Timeline Table</h3>
+
+        <div id="ext_timeline" class="xtable scroll">
+            <table class="table simple headline nowrap">
+                <thead>
+                <tr>
+                    <th style="width: 30%;">Name</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Initiator</th>
+                    <th>Size</th>
+                    <th>Time</th>
+                    <th style="width: 40%;">Waterfall</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <script data-jui="#ext_timeline" data-tpl="row" type="text/template">
+            <tr>
+                <td title="<!= url !>">
+                    <! if(typeof(row.data.txid) == "string") { !>
+                    <a class="txlink" href="javascript:showExtXViewPopup('<!= row.data.txid !>')">[Detail transaction]</a>
+                    <! } !>
+
+                    <a href="javascript:window.open('<!= url !>', '', 'width=640, height=480')" target="_blank"><!= name !></a>
+                </td>
+                <td><!= status !></td>
+                <td><!= type !></td>
+                <td><!= initiator !></td>
+                <td><!= ((size == -1 ? transferSize : size) / 1024).toFixed(2) !>KB</td>
+                <td><!= duration.toFixed(2) !>ms</td>
+                <td><div id="table_chart_<!= row.index !>" data-index="<!= row.index !>" class="inner-chart"></div></td>
+            </tr>
+        </script>
+
+        <script data-jui="#ext_timeline" data-tpl="none" type="text/template">
+            <tr>
+                <td colspan="7">No entries</td>
+            </tr>
+        </script>
+
+        <div id="ext_tooltip" class="popover" style="display: none; width: 230px;">
+            <div class="head">Detail</div>
+            <div class="body">
+                <div class="message">
+                    <div class="row">
+                        <div class="col col-4" align="right" style="font-weight: bold;">redirect</div>
+                        <div class="col col-8">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="ext_tooltip_redirect"></span>ms</div>
+                    </div>
+                    <div class="row">
+                        <div class="col col-4" align="right" style="font-weight: bold;">dns</div>
+                        <div class="col col-8">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="ext_tooltip_dns"></span>ms</div>
+                    </div>
+                    <div class="row">
+                        <div class="col col-4" align="right" style="font-weight: bold;">tcp</div>
+                        <div class="col col-8">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="ext_tooltip_tcp"></span>ms</div>
+                    </div>
+                    <div class="row">
+                        <div class="col col-4" align="right" style="font-weight: bold;">request</div>
+                        <div class="col col-8">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="ext_tooltip_request"></span>ms</div>
+                    </div>
+                    <div class="row">
+                        <div class="col col-4" align="right" style="font-weight: bold;">response</div>
+                        <div class="col col-8">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="ext_tooltip_response"></span>ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <iframe id="ext_iframe" style="display: none;"></iframe>
+</div>
