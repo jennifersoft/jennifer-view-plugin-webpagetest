@@ -155,15 +155,13 @@ function loadFrontendUrl(sid) {
 
 function loadEntryData(txid, entryStr) {
     $.ajax({
-        url: "/plugin/pagetest/list",
+        url: "/plugin/webpagetest/list",
         method: "POST",
         data: {
             entryStr: entryStr,
             txid: txid
         },
         success: function(data) {
-            console.log(data);
-
             for(var i = 0; i < data.length; i++) {
                 timeMax = Math.max(timeMax, data[i].duration)
             }
@@ -310,9 +308,6 @@ function createTimelineRow(index) {
         data.serverend = data.responseEnd;
         data.frontend = data.duration - data.serverend;
     }
-
-    console.log("---------------");
-    console.log(target, colors);
 
     return jui.create("chart.builder", "#table_chart_" + index, {
         height : 10,
