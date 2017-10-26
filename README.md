@@ -9,7 +9,10 @@ Execute the following in the Jennifer management screen.
  4. Enter the 'anything' ID.
  5. Enter the plugin path directly or upload the file.
 
- 
+## Key features
+
+Only the URL set in **Management > Frontend Monitoring** can be used to test web pages.
+
 ## Supported agent versions
  
 | Platform | Agent verison |
