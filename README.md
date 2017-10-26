@@ -18,5 +18,5 @@ Only the URL set in **Management > Frontend Monitoring** can be used to test web
 | Platform | Agent verison |
 | ------------- |:-------------:|
 | Java | Greater than or equal to version 5.3.0.7 |
-| .NET | Greater than or equal to version 5.3.1 |
+| .NET | Greater than or equal to version 5.3.0.8 |
 | PHP | Greater than or equal to version 5.3.0.7 |
