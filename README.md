@@ -10,10 +10,10 @@ Execute the following in the Jennifer management screen.
  5. Enter the plugin path directly or upload the file.
 
  
-## Supported version
+## Supported agent versions
  
-Different versions of the server support different plug-in versions.
- 
-| Plugin version           | Jennifer server version |
+| Platform | Agent verison |
 | ------------- |:-------------:|
-| 1.0.0       | Greater than or equal to version 5.3.0 |
+| Java | Greater than or equal to version 5.3.0 |
+| .NET | Greater than or equal to version 5.3.0 |
+| PHP | Greater than or equal to version 5.3.0 |
