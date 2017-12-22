@@ -165,9 +165,6 @@
             initializeProxies(startPoint, 0);
 
             aries_profiler.data = PROFILES;
-
-            // TODO: 테스트용, 차후에 삭제하기
-            global["aries_profiles"] = aries_profiler;
         }(window, aries_profiler.origin, aries_profiler.depth, aries_profiler.limit, aries_profiler.minimum));
 
         function _j_fem_docComplete() {
