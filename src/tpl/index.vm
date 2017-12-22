@@ -34,9 +34,12 @@
         <div id="ext_section"></div>
     </div>
 
-    <div class="row" style="margin-top: 15px;">
-        <h3>Timeline Table</h3>
+    <ul id="ext_tab" class="tab top" style="margin: 50px 0px 15px 0px;">
+        <li><a href="#">Entry Timeline</a></li>
+        <li><a href="#">Profile Calltree</a></li>
+    </ul>
 
+    <div class="row">
         <div id="ext_timeline" class="xtable scroll">
             <table class="table simple headline nowrap">
                 <thead>
@@ -105,6 +108,48 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="row">
+        <div id="ext_calltree" class="xtable scroll">
+            <table class="table simple headline nowrap">
+                <thead>
+                <tr>
+                    <th width="40%">Profile Name</th>
+                    <th>Reponse Time</th>
+                    <th>Package</th>
+                    <th>Parameters</th>
+                    <th>Return</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <script data-jui="#ext_calltree" data-tpl="row" type="text/template">
+            <!
+            var paramStr = printParameters(parameterList);
+            var returnStr = (typeof(returnValue) == "undefined") ? "undefined" : returnValue;
+            !>
+            <tr>
+                <td style="padding-left: <!= 5 + (row.depth * 20) !>px">
+                    <! if(row.children.length > 0) { !>
+                    <strong><! if(row.type == "open") { !>-<! } else { !>+<! } !></strong>
+                    <! } !>
+                    <!= functionName.split("/")[0] !>
+                </td>
+                <td><!= (responseTime == -1) ? "" : responseTime !></td>
+                <td><!= parentName !></td>
+                <td title="<!= paramStr !>"><!= paramStr !></td>
+                <td title="<!= returnStr !>"><!= returnStr !></td>
+            </tr>
+        </script>
+
+        <script data-jui="#ext_calltree" data-tpl="none" type="text/template">
+            <tr>
+                <td colspan="5">No entries</td>
+            </tr>
+        </script>
     </div>
 
     <iframe id="ext_iframe" style="display: none;"></iframe>

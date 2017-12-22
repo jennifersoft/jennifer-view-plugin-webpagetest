@@ -1,7 +1,8 @@
-var domainBox = null, pathCombo = null, timeTable = null,
+var domainBox = null, pathCombo = null, tableTab = null, timeTable = null, calltreeTable = null,
     timeMax = 0, product = (typeof(aries) == "undefined") ? jennifer : aries;
+var txidData = null, entriesData = null, profilesData = null;
 
-jui.ready([ "ui.combo", "grid.xtable", "chart.builder" ], function(combo, xtable, builder) {
+jui.ready([ "ui.combo", "grid.xtable", "chart.builder", "ui.tab" ], function(combo, xtable, builder, tab) {
     $.ajax({
         url: "/domain/list",
         data: {
@@ -30,19 +31,62 @@ jui.ready([ "ui.combo", "grid.xtable", "chart.builder" ], function(combo, xtable
         }
     });
 
+    tableTab = tab("#ext_tab", {
+        event: {
+            change: function (data) {
+                if(data.index == 0) {
+                    $(timeTable.root).parent().show();
+                    $(calltreeTable.root).parent().hide();
+                    timeTable.resize();
+                    loadEntryData();
+
+                } else {
+                    $(timeTable.root).parent().hide();
+                    $(calltreeTable.root).parent().show();
+                    calltreeTable.resize();
+                    loadCalltreeData();
+                }
+            }
+        },
+        index: 0
+    });
+
+    var tableWidth = $("#pagetest-main").width(),
+        tableHeight = $("#dashboardContentBody").height() - 350;
+
     timeTable = xtable("#ext_timeline", {
         fields: [ "name", "status", "type", "initiator", "size", "time", null ],
         resize: true,
-        sort: [ 0, 1, 2, 3, 4, 5 ],
-        width: $("#pagetest-main").width(),
-        scrollWidth: $("#pagetest-main").width(),
-        scrollHeight: $("#dashboardContentBody").height() - 300,
+        width: tableWidth,
+        scrollWidth: tableWidth,
+        scrollHeight: tableHeight,
         event: {
             scroll: function() {
                 updateInnerTimeCharts();
             }
         }
     });
+
+    calltreeTable = xtable("#ext_calltree", {
+        fields: [ "functionName", "responseTime", "parentName", null, null ],
+        resize: true,
+        width: tableWidth,
+        scrollWidth: tableWidth,
+        scrollHeight: tableHeight,
+        rowHeight: 25,
+        buffer: "vscroll",
+        event: {
+            select: function(row, e) {
+                if(row.type == "fold") {
+                    this.open(row.index);
+                } else {
+                    this.fold(row.index);
+                }
+            }
+        }
+    });
+
+    $(calltreeTable.root).parent().hide();
 
     $("#ext_path_tail").find("a").on("click", function(e) {
         $("#ext_path_tail").hide();
@@ -61,7 +105,15 @@ jui.ready([ "ui.combo", "grid.xtable", "chart.builder" ], function(combo, xtable
     $(window).on("message", function(e) {
         var d = e.originalEvent.data;
 
-        loadEntryData(d.txid, d.entries);
+        txidData = d.txid;
+        entriesData = d.entries;
+        profilesData = d.profiles;
+
+        if(tableTab.activeIndex() == 0) {
+            loadEntryData();
+        } else {
+            loadCalltreeData();
+        }
 
         setTimeout(function() {
             $("#ext_top_section").show();
@@ -153,13 +205,24 @@ function loadFrontendUrl(sid) {
     });
 }
 
-function loadEntryData(txid, entryStr) {
+function loadCalltreeData() {
+    if(profilesData == null) return;
+
+    var profiles = JSON.parse(profilesData);
+    calltreeTable.updateTree(calculateTreeData(profiles));
+
+    profilesData = null;
+}
+
+function loadEntryData() {
+    if(txidData == null || entriesData == null) return;
+
     $.ajax({
         url: "/plugin/webpagetest/list",
         method: "POST",
         data: {
-            entryStr: entryStr,
-            txid: txid
+            entryStr: entriesData,
+            txid: txidData
         },
         success: function(data) {
             for(var i = 0; i < data.length; i++) {
@@ -168,6 +231,9 @@ function loadEntryData(txid, entryStr) {
 
             timeTable.update(data);
             updateInnerTimeCharts();
+
+            txidData = null;
+            entriesData = null;
         },
         error: function(e) {
         }
@@ -374,4 +440,124 @@ function showExtXViewPopup(txid) {
         time - 1000 * 60,
         time + 1000 * 60
     );
+}
+
+function calculateTreeData(profiles) {
+    profiles.sort(function(a, b) {
+        return a.startTime - b.startTime;
+    });
+
+    var indexMap = {
+        "GLOBAL/0": "0",
+        "UNKNOWN/0": "0.0"
+    };
+
+    var globalIndex = 1,
+        unknownIndex = 0,
+        profilesCount = {},
+        etcProfiles = [],
+        data = [];
+
+    data.push({
+        index: "0",
+        data: {
+            functionName: "GLOBAL",
+            responseTime: -1,
+            parentName: "",
+            callerName: null,
+            parameterList: []
+        },
+        type: "open"
+    }, {
+        index: "0.0",
+        data: {
+            functionName: "UNKNOWN",
+            responseTime: -1,
+            parentName: "",
+            callerName: "GLOBAL",
+            parameterList: []
+        },
+        type: "fold"
+    });
+
+    for(var i = 0; i < profiles.length; i++) {
+        var row = profiles[i];
+        if(row.callerName != "GLOBAL" && row.callerName != "UNKNOWN") {
+            etcProfiles.push(row);
+        }
+    }
+
+    for(var i = 0; i < profiles.length; i++) {
+        var row = profiles[i],
+            index = null;
+
+        if(row.callerName.startsWith("GLOBAL")) {
+            index = indexMap[row.callerName] + "." + globalIndex;
+            globalIndex += 1;
+        } else if(row.callerName.startsWith("UNKNOWN")) {
+            index = indexMap[row.callerName] + "." + unknownIndex;
+            unknownIndex += 1;
+        }
+
+        if(index != null) {
+            data.push({index: index, data: row, type: "fold"});
+            indexMap[row.functionName] = index;
+        }
+    }
+
+    for(var i = 0; i < etcProfiles.length; i++) {
+        var row = etcProfiles[i],
+            index = null;
+
+        if(!indexMap[row.callerName]) {
+            index = indexMap["GLOBAL/0"] + "." + globalIndex;
+            globalIndex += 1;
+        } else {
+            var pIndex = indexMap[row.callerName];
+
+            if(typeof(profilesCount[pIndex]) == "undefined") {
+                profilesCount[pIndex] = 0;
+            }
+
+            index = pIndex + "." + profilesCount[pIndex];
+            profilesCount[pIndex] += 1;
+        }
+
+        if(index != null) {
+            data.push({index: index, data: row, type: "fold"});
+            indexMap[row.functionName] = index;
+        }
+    }
+
+    return data;
+}
+
+function convertSystemSourcetoHtml(str) {
+    if(typeof(str) == "string") {
+        str = str.replace(/</g,"&lt;");
+        str = str.replace(/>/g,"&gt;");
+        str = str.replace(/\"/g,"&quot;");
+        str = str.replace(/\'/g,"&#39;");
+        str = str.replace(/\n/g,"");
+        return str;
+    }
+
+    return str;
+}
+
+function printParameters(params) {
+    var values = [],
+        maxlen = 50;
+
+    for(var i = 0; i < params.length; i++) {
+        var v = params[i].value;
+
+        if(typeof(v) == "object" && v.length > maxlen) {
+            values.push(convertSystemSourcetoHtml(v.substr(0, maxlen)));
+        } else {
+            values.push(convertSystemSourcetoHtml(v));
+        }
+    }
+
+    return values.join(", ");
 }
