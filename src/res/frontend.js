@@ -53,7 +53,7 @@
             }
 
             function createProxy(parent, name, obj) {
-                if(typeof(PROFILES_COUNT[name]) == "undefined") {
+                if(PROFILES_COUNT[name] == undefined) {
                     PROFILES_COUNT[name] = 0;
                 }
 
@@ -96,13 +96,13 @@
                                 callerName = name.split("#")[0];
                                 // 루트에 추가한다.
                             } else {
-                                callerName = "GLOBAL";
+                                callerName = "global";
                             }
                         }
 
                         // 공백일 때, 출처를 알 수 없음.
                         if(callerName === "") {
-                            callerName = "UNKNOWN";
+                            callerName = "unknown";
                         }
 
                         // 응답값이 기본형이 아닐 경우에 대한 처리
@@ -115,6 +115,10 @@
                         }
 
                         if(responseTime >= minResponseTime) {
+                            if(PROFILES_COUNT[callerName] == undefined) {
+                                PROFILES_COUNT[callerName] = 0;
+                            }
+
                             PROFILES.push({
                                 startTime: startTime,
                                 parentName: parent,
@@ -163,8 +167,6 @@
             }
 
             initializeProxies(startPoint, 0);
-
-            aries_profiler.data = PROFILES;
         }(window, aries_profiler.origin, aries_profiler.depth, aries_profiler.limit, aries_profiler.minimum));
 
         function _j_fem_docComplete() {

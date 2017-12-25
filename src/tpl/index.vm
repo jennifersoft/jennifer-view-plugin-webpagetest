@@ -115,7 +115,7 @@
             <table class="table simple headline nowrap">
                 <thead>
                 <tr>
-                    <th width="40%">Profile Name</th>
+                    <th width="30%">Profile Name</th>
                     <th>Reponse Time</th>
                     <th>Package</th>
                     <th>Parameters</th>
@@ -132,13 +132,16 @@
             var returnStr = (typeof(returnValue) == "undefined") ? "undefined" : returnValue;
             !>
             <tr>
-                <td style="padding-left: <!= 5 + (row.depth * 20) !>px">
+                <td style="padding-left: <!= 5 + (row.depth * 30) !>px">
                     <! if(row.children.length > 0) { !>
                     <strong><! if(row.type == "open") { !>-<! } else { !>+<! } !></strong>
                     <! } !>
-                    <!= functionName.split("/")[0] !>
+                    <!= functionName !>
                 </td>
-                <td><!= (responseTime == -1) ? "" : responseTime !></td>
+                <td>
+                    <!= (startTime != null) ? getServerMoment(startTime).format("mm:ss.SSS") : "" !>
+                    <!= (responseTime == -1) ? "" : ("(" + responseTime + ")") !>
+                </td>
                 <td><!= parentName !></td>
                 <td title="<!= paramStr !>"><!= paramStr !></td>
                 <td title="<!= returnStr !>"><!= returnStr !></td>

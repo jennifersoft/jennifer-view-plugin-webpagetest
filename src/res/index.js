@@ -448,8 +448,8 @@ function calculateTreeData(profiles) {
     });
 
     var indexMap = {
-        "GLOBAL/0": "0",
-        "UNKNOWN/0": "0.0"
+        "global/0": "0",
+        "unknown/0": "0.0"
     };
 
     var globalIndex = 1,
@@ -461,20 +461,22 @@ function calculateTreeData(profiles) {
     data.push({
         index: "0",
         data: {
-            functionName: "GLOBAL",
+            functionName: "global/0",
             responseTime: -1,
             parentName: "",
             callerName: null,
+            startTime: null,
             parameterList: []
         },
         type: "open"
     }, {
         index: "0.0",
         data: {
-            functionName: "UNKNOWN",
+            functionName: "unknown/0",
             responseTime: -1,
             parentName: "",
-            callerName: "GLOBAL",
+            callerName: "global/0",
+            startTime: null,
             parameterList: []
         },
         type: "fold"
@@ -482,7 +484,7 @@ function calculateTreeData(profiles) {
 
     for(var i = 0; i < profiles.length; i++) {
         var row = profiles[i];
-        if(row.callerName != "GLOBAL" && row.callerName != "UNKNOWN") {
+        if(!row.callerName.startsWith("global") && !row.callerName.startsWith("unknown")) {
             etcProfiles.push(row);
         }
     }
@@ -491,10 +493,10 @@ function calculateTreeData(profiles) {
         var row = profiles[i],
             index = null;
 
-        if(row.callerName.startsWith("GLOBAL")) {
+        if(row.callerName.startsWith("global")) {
             index = indexMap[row.callerName] + "." + globalIndex;
             globalIndex += 1;
-        } else if(row.callerName.startsWith("UNKNOWN")) {
+        } else if(row.callerName.startsWith("unknown")) {
             index = indexMap[row.callerName] + "." + unknownIndex;
             unknownIndex += 1;
         }
@@ -510,7 +512,7 @@ function calculateTreeData(profiles) {
             index = null;
 
         if(!indexMap[row.callerName]) {
-            index = indexMap["GLOBAL/0"] + "." + globalIndex;
+            index = indexMap["global/0"] + "." + globalIndex;
             globalIndex += 1;
         } else {
             var pIndex = indexMap[row.callerName];
