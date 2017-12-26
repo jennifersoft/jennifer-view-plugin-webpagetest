@@ -153,7 +153,9 @@
                         if(!EXCEPT_FUNCTIONS.includes(name)) {
                             root[name] = createProxy(origin, name, root[name]);
                         }
-                    } else if(typeof(root[name]) == "object") {
+                    }
+
+                    if(typeof(root[name]) == "function" || typeof(root[name]) == "object") {
                         var reg = /^[0-9]*$/;
 
                         // TODO: object[string] 형태로 설정된 객체는 제외함. 차후 개선할 필요가 있음
@@ -167,6 +169,8 @@
             }
 
             initializeProxies(startPoint, 0);
+
+            aries_profiler.data = PROFILES;
         }(window, aries_profiler.origin, aries_profiler.depth, aries_profiler.limit, aries_profiler.minimum));
 
         function _j_fem_docComplete() {

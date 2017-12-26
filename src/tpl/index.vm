@@ -132,7 +132,7 @@
             var returnStr = (typeof(returnValue) == "undefined") ? "undefined" : returnValue;
             !>
             <tr>
-                <td style="padding-left: <!= 5 + (row.depth * 30) !>px">
+                <td title="<!= callerName !>" style="padding-left: <!= 5 + (row.depth * 30) !>px">
                     <! if(row.children.length > 0) { !>
                     <strong><! if(row.type == "open") { !>-<! } else { !>+<! } !></strong>
                     <! } !>
