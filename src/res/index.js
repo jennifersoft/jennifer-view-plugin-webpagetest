@@ -444,21 +444,19 @@ function showExtXViewPopup(txid) {
 
 function calculateTreeData(profiles) {
     profiles.sort(function(a, b) {
-        return a.startTime - b.startTime;
+        return (a.callerDepth == b.callerDepth) ?
+            a.startTime - b.startTime : a.callerDepth - b.callerDepth;
     });
 
+    console.table(profiles);
+
     var indexMap = {
-        "global/0": "0",
-        "unknown/0": "0.0"
+        "global/0": "0"
     };
-
-    var globalIndex = 1,
-        unknownIndex = 0,
-        profilesCount = {},
-        etcProfiles = [],
-        data = [];
-
-    data.push({
+    var indexCount = {
+        "global/0": 0
+    };
+    var data = [{
         index: "0",
         data: {
             functionName: "global/0",
@@ -469,67 +467,30 @@ function calculateTreeData(profiles) {
             parameterList: []
         },
         type: "open"
-    }, {
-        index: "0.0",
-        data: {
-            functionName: "unknown/0",
-            responseTime: -1,
-            parentName: "",
-            callerName: "global/0",
-            startTime: null,
-            parameterList: []
-        },
-        type: "fold"
-    });
-
-    for(var i = 0; i < profiles.length; i++) {
-        var row = profiles[i];
-        if(!row.callerName.startsWith("global") && !row.callerName.startsWith("unknown")) {
-            etcProfiles.push(row);
-        }
-    }
+    }];
 
     for(var i = 0; i < profiles.length; i++) {
         var row = profiles[i],
             index = null;
 
-        if(row.callerName.startsWith("global")) {
-            index = indexMap[row.callerName] + "." + globalIndex;
-            globalIndex += 1;
-        } else if(row.callerName.startsWith("unknown")) {
-            index = indexMap[row.callerName] + "." + unknownIndex;
-            unknownIndex += 1;
+        if(indexMap[row.callerName]) {
+            index = indexMap[row.callerName] + "." + indexCount[row.callerName];
+            indexCount[row.callerName] += 1;
         }
 
         if(index != null) {
-            data.push({index: index, data: row, type: "fold"});
             indexMap[row.functionName] = index;
+            indexCount[row.functionName] = 0;
+
+            data.push({
+                index: index,
+                data: row,
+                type: "fold"
+            });
         }
     }
 
-    for(var i = 0; i < etcProfiles.length; i++) {
-        var row = etcProfiles[i],
-            index = null;
-
-        if(!indexMap[row.callerName]) {
-            index = indexMap["global/0"] + "." + globalIndex;
-            globalIndex += 1;
-        } else {
-            var pIndex = indexMap[row.callerName];
-
-            if(typeof(profilesCount[pIndex]) == "undefined") {
-                profilesCount[pIndex] = 0;
-            }
-
-            index = pIndex + "." + profilesCount[pIndex];
-            profilesCount[pIndex] += 1;
-        }
-
-        if(index != null) {
-            data.push({index: index, data: row, type: "fold"});
-            indexMap[row.functionName] = index;
-        }
-    }
+    console.log(data);
 
     return data;
 }

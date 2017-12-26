@@ -17,6 +17,7 @@
                 GLOBAL: 0,
                 UNKNOWN: 0
             };
+            var ACTIVE_QUEUE = [];
 
             var EXCEPT_FUNCTIONS = [
                 "requestAnimationFrame",
@@ -31,7 +32,8 @@
                 "document",
                 "frames",
                 "self",
-                "parent"
+                "parent",
+                "jQuery"
             ];
 
             function convertObjectToString(obj) {
@@ -59,6 +61,8 @@
 
                 var proxyApply = function(target, that, args) {
                     if(PROFILES.length < maxCount) {
+                        ACTIVE_QUEUE.push({ name: name, depth: ACTIVE_QUEUE.length + 1 });
+
                         var parameterList = [];
 
                         for(var i = 0; i < args.length; i++) {
@@ -68,7 +72,7 @@
                                     value: "callback"
                                 };
 
-                                var callbackProxy = createProxy(parent, name + "#" + i, args[i]);
+                                var callbackProxy = createProxy(parent, "callback", args[i]);
                                 args[i] = callbackProxy;
                             } else if(typeof(args[i]) == "object") {
                                 // TODO: 차후 다시 구현하기 (value를 문자열로 만드는것)
@@ -85,24 +89,41 @@
                         }
 
                         var startTime = Date.now();
-                        var callerName = (proxyApply.caller != null) ? proxyApply.caller.name : null;
+                        // var callerName = (proxyApply.caller != null) ? proxyApply.caller.name : null;
+
+                        var callerQueue = ACTIVE_QUEUE[ACTIVE_QUEUE.length - 2];
+                        var callerName = (callerQueue != undefined) ? callerQueue.name : null;
+                        var callerDepth = (callerQueue != undefined) ? callerQueue.depth : 0;
                         var realReturnValue = Reflect.apply(target, that, args);
+
+                        ACTIVE_QUEUE.pop();
+
                         var returnValue = null;
                         var responseTime = Date.now() - startTime;
 
-                        if(callerName == null) {
-                            // 콜백함수인데, 콜러가 없다면 자신을 호출한 함수를 콜러로 설정한다.
-                            if(name.indexOf("#") != -1) {
-                                callerName = name.split("#")[0];
-                                // 루트에 추가한다.
-                            } else {
-                                callerName = "global";
-                            }
-                        }
+                        // if(callerName == null) {
+                        //     // 콜백함수인데, 콜러가 없다면 자신을 호출한 함수를 콜러로 설정한다.
+                        //     if(name.indexOf("#") != -1) {
+                        //         callerName = name.split("#")[0];
+                        //         // 루트에 추가한다.
+                        //     } else {
+                        //         callerName = "global";
+                        //     }
+                        // }
+                        //
+                        // // 공백일 때, 출처를 알 수 없음.
+                        // if(callerName === "") {
+                        //     callerName = "unknown";
+                        // }
 
-                        // 공백일 때, 출처를 알 수 없음.
-                        if(callerName === "") {
-                            callerName = "unknown";
+                        if(callerName == null) {
+//                                if(name.indexOf("#") != -1) {
+//                                    callerName = name.split("#")[0];
+//                                } else {
+//                                    callerName = "global";
+//                                }
+
+                            callerName = "global";
                         }
 
                         // 응답값이 기본형이 아닐 경우에 대한 처리
@@ -124,6 +145,7 @@
                                 parentName: parent,
                                 functionName: name + "/" + PROFILES_COUNT[name],
                                 callerName: callerName + "/" + PROFILES_COUNT[callerName],
+                                callerDepth: callerDepth,
                                 responseTime: responseTime,
                                 returnValue: returnValue,
                                 parameterList: parameterList
