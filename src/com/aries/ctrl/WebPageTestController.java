@@ -34,7 +34,7 @@ public class WebPageTestController {
 
     @RequestMapping(value = { "/webpagetest/list" }, method = RequestMethod.POST)
     @ResponseBody
-    public List<Map<String, Object>> getEntries(@RequestParam String entryStr, @RequestParam String txid) throws JSONException, IOException {
+    public List<Map<String, Object>> getEntries(@RequestParam String entryStr, @RequestParam String txid) throws JSONException {
         List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
         LogUtil.info("txid : " + txid);
 
@@ -46,18 +46,23 @@ public class WebPageTestController {
             String url = (String) row.get("name");
             String[] urls = url.split("/");
 
-            URL urlObj = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection)urlObj.openConnection();
-            connection.setRequestMethod("HEAD");
-            InputStream input = connection.getInputStream();
+            try {
+                URL urlObj = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection)urlObj.openConnection();
+                connection.setRequestMethod("HEAD");
+                InputStream input = connection.getInputStream();
 //            connection.connect();
+                map.put("status", connection.getResponseCode());
+                map.put("size", connection.getContentLength());
+            } catch(IOException e) {
+                map.put("status", 500);
+                map.put("size", 0);
+            }
 
             map.put("url", url);
             map.put("name", urls[urls.length - 1]);
-            map.put("status", connection.getResponseCode());
             map.put("type", row.get("entryType"));
             map.put("initiator", row.get("initiatorType"));
-            map.put("size", connection.getContentLength());
             map.put("duration", row.get("duration"));
 
             map.put("decodedBodySize", row.get("decodedBodySize"));
