@@ -451,10 +451,12 @@ function calculateTreeData(profiles) {
     console.table(profiles);
 
     var indexMap = {
-        "global/0": "0"
+        "global/0": "0",
+        "unknown/0": "0.0"
     };
     var indexCount = {
-        "global/0": 0
+        "global/0": 1,
+        "unknown/0": 0
     };
     var data = [{
         index: "0",
@@ -467,6 +469,17 @@ function calculateTreeData(profiles) {
             parameterList: []
         },
         type: "open"
+    }, {
+        index: "0.0",
+        data: {
+            functionName: "unknown/0",
+            responseTime: -1,
+            parentName: "",
+            callerName: null,
+            startTime: null,
+            parameterList: []
+        },
+        type: "fold"
     }];
 
     // limit만큼만 트리데이터 찾기 시도함.
@@ -502,6 +515,8 @@ function calculateTreeData(profiles) {
     }
 
     traverseTreeData(data, profiles, 5);
+
+    console.log("트리 데이터 개수 : " + data.length);
 
     return data;
 }

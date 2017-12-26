@@ -13,10 +13,7 @@
             if(typeof(global.Proxy) != "function") return;
 
             var PROFILES = [];
-            var PROFILES_COUNT = {
-                GLOBAL: 0,
-                UNKNOWN: 0
-            };
+            var PROFILES_COUNT = {};
             var ACTIVE_QUEUE = [];
 
             var EXCEPT_FUNCTIONS = [
@@ -133,16 +130,21 @@
                                 PROFILES_COUNT[callerName] = 0;
                             }
 
+                            var functionName = name + "/" + PROFILES_COUNT[name];
                             if(callerObj !== undefined) {
                                 callerName = callerName + "/" + callerObj.count;
                             } else {
                                 callerName = callerName + "/" + PROFILES_COUNT[callerName];
                             }
 
+                            if(functionName == callerName) {
+                                callerName = getCallerName(proxyApply.caller, functionName, 0);
+                            }
+
                             PROFILES.push({
                                 startTime: startTime,
                                 parentName: parent,
-                                functionName: name + "/" + PROFILES_COUNT[name],
+                                functionName: functionName,
                                 callerName: callerName,
                                 callerDepth: callerDepth,
                                 responseTime: responseTime,
@@ -162,6 +164,24 @@
                 return new Proxy(obj, {
                     apply: proxyApply
                 });
+            }
+
+            // TODO: callerName을 몾찾을 때...
+            function getCallerName(caller, functionName, searchDepth) {
+                var maxSearchDepth = 10;
+                var name = caller.name;
+                var prevCount = PROFILES_COUNT[name];
+                var prevName = name + "/" + prevCount;
+
+                if (prevCount != undefined && prevName != functionName) {
+                    return prevName;
+                }
+
+                if (searchDepth < maxSearchDepth) {
+                    return getCallerName(caller.caller, functionName, searchDepth + 1);
+                }
+
+                return "unknown/0";
             }
 
             function initializeProxies(origin, depth) {
@@ -190,8 +210,8 @@
             }
 
             initializeProxies(startPoint, 0);
-
             aries_profiler.data = PROFILES;
+
         }(window, aries_profiler.origin, aries_profiler.depth, aries_profiler.limit, aries_profiler.minimum));
 
         function _j_fem_docComplete() {
@@ -248,18 +268,18 @@
                     var entriesStr = "[]";
                     var profilesStr = "[]";
 
-                    if (!!window.JSON) {
-                        entriesStr = window.JSON.stringify(window.performance.getEntries());
-                        profilesStr = window.JSON.stringify(aries_profiler.data)
-                    }
-
                     setTimeout(function() {
+                        if (!!window.JSON) {
+                            entriesStr = window.JSON.stringify(window.performance.getEntries());
+                            profilesStr = window.JSON.stringify(aries_profiler.data)
+                        }
+
                         window.parent.postMessage({
                             profiles: profilesStr,
                             entries: entriesStr,
                             txid: txid
                         }, "{{{aries_front_end_measure_origin_sender}}}");
-                    }, 10000);
+                    }, 5000);
                 }
             } catch (e) {
                 throw e;
