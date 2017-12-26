@@ -469,28 +469,39 @@ function calculateTreeData(profiles) {
         type: "open"
     }];
 
-    for(var i = 0; i < profiles.length; i++) {
-        var row = profiles[i],
-            index = null;
+    // limit만큼만 트리데이터 찾기 시도함.
+    var traverseTreeData = function(originData, targetProfiles, limit) {
+        var etcProfiles = [];
 
-        if(indexMap[row.callerName]) {
-            index = indexMap[row.callerName] + "." + indexCount[row.callerName];
-            indexCount[row.callerName] += 1;
+        for(var i = 0; i < targetProfiles.length; i++) {
+            var row = targetProfiles[i],
+                index = null;
+
+            if(indexMap[row.callerName]) {
+                index = indexMap[row.callerName] + "." + indexCount[row.callerName];
+                indexCount[row.callerName] += 1;
+            }
+
+            if(index != null) {
+                indexMap[row.functionName] = index;
+                indexCount[row.functionName] = 0;
+
+                originData.push({
+                    index: index,
+                    data: row,
+                    type: "fold"
+                });
+            } else {
+                etcProfiles.push(row);
+            }
         }
 
-        if(index != null) {
-            indexMap[row.functionName] = index;
-            indexCount[row.functionName] = 0;
-
-            data.push({
-                index: index,
-                data: row,
-                type: "fold"
-            });
+        if(etcProfiles.length > 0 && limit > 0) {
+            traverseTreeData(originData, etcProfiles, limit - 1);
         }
     }
 
-    console.log(data);
+    traverseTreeData(data, profiles, 5);
 
     return data;
 }

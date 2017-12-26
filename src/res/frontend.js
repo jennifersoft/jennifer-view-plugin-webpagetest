@@ -54,14 +54,20 @@
                 return "{" + values.join(",") + "}";
             }
 
-            function createProxy(parent, name, obj) {
+            function createProxy(parent, name, obj, callerObj) {
                 if(PROFILES_COUNT[name] == undefined) {
                     PROFILES_COUNT[name] = 0;
                 }
 
                 var proxyApply = function(target, that, args) {
                     if(PROFILES.length < maxCount) {
-                        ACTIVE_QUEUE.push({ name: name, depth: ACTIVE_QUEUE.length + 1 });
+                        var queue = {
+                            name: name,
+                            depth: ACTIVE_QUEUE.length + 1,
+                            count: PROFILES_COUNT[name]
+                        };
+
+                        ACTIVE_QUEUE.push(queue);
 
                         var parameterList = [];
 
@@ -72,7 +78,12 @@
                                     value: "callback"
                                 };
 
-                                var callbackProxy = createProxy(parent, "callback", args[i]);
+                                var callbackProxy = createProxy(parent, "__callback__", args[i], {
+                                    name: queue.name,
+                                    depth: queue.depth - 1,
+                                    count: queue.count
+                                });
+
                                 args[i] = callbackProxy;
                             } else if(typeof(args[i]) == "object") {
                                 // TODO: 차후 다시 구현하기 (value를 문자열로 만드는것)
@@ -89,8 +100,6 @@
                         }
 
                         var startTime = Date.now();
-                        // var callerName = (proxyApply.caller != null) ? proxyApply.caller.name : null;
-
                         var callerQueue = ACTIVE_QUEUE[ACTIVE_QUEUE.length - 2];
                         var callerName = (callerQueue != undefined) ? callerQueue.name : null;
                         var callerDepth = (callerQueue != undefined) ? callerQueue.depth : 0;
@@ -101,29 +110,13 @@
                         var returnValue = null;
                         var responseTime = Date.now() - startTime;
 
-                        // if(callerName == null) {
-                        //     // 콜백함수인데, 콜러가 없다면 자신을 호출한 함수를 콜러로 설정한다.
-                        //     if(name.indexOf("#") != -1) {
-                        //         callerName = name.split("#")[0];
-                        //         // 루트에 추가한다.
-                        //     } else {
-                        //         callerName = "global";
-                        //     }
-                        // }
-                        //
-                        // // 공백일 때, 출처를 알 수 없음.
-                        // if(callerName === "") {
-                        //     callerName = "unknown";
-                        // }
-
                         if(callerName == null) {
-//                                if(name.indexOf("#") != -1) {
-//                                    callerName = name.split("#")[0];
-//                                } else {
-//                                    callerName = "global";
-//                                }
-
-                            callerName = "global";
+                            if(callerObj !== undefined) {
+                                callerName = callerObj.name;
+                                callerDepth = callerObj.depth;
+                            } else {
+                                callerName = "global";
+                            }
                         }
 
                         // 응답값이 기본형이 아닐 경우에 대한 처리
@@ -140,11 +133,17 @@
                                 PROFILES_COUNT[callerName] = 0;
                             }
 
+                            if(callerObj !== undefined) {
+                                callerName = callerName + "/" + callerObj.count;
+                            } else {
+                                callerName = callerName + "/" + PROFILES_COUNT[callerName];
+                            }
+
                             PROFILES.push({
                                 startTime: startTime,
                                 parentName: parent,
                                 functionName: name + "/" + PROFILES_COUNT[name],
-                                callerName: callerName + "/" + PROFILES_COUNT[callerName],
+                                callerName: callerName,
                                 callerDepth: callerDepth,
                                 responseTime: responseTime,
                                 returnValue: returnValue,
