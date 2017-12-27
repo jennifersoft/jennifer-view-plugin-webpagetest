@@ -138,7 +138,7 @@
                             }
 
                             if(functionName == callerName) {
-                                callerName = getCallerName(proxyApply.caller, functionName, 0);
+                                callerName = getCallerName(proxyApply.caller, functionName, callerDepth, 0);
                             }
 
                             PROFILES.push({
@@ -167,21 +167,23 @@
             }
 
             // TODO: callerName을 몾찾을 때...
-            function getCallerName(caller, functionName, searchDepth) {
-                var maxSearchDepth = 10;
-                var name = caller.name;
-                var prevCount = PROFILES_COUNT[name];
-                var prevName = name + "/" + prevCount;
+            function getCallerName(caller, functionName, callerDepth, searchDepth) {
+                if(typeof(caller) == "object") {
+                    var maxSearchDepth = 10;
+                    var name = caller.name;
+                    var prevCount = PROFILES_COUNT[name];
+                    var prevName = name + "/" + prevCount;
 
-                if (prevCount != undefined && prevName != functionName) {
-                    return prevName;
+                    if (prevCount != undefined && prevName != functionName) {
+                        return prevName;
+                    }
+
+                    if (searchDepth < maxSearchDepth) {
+                        return getCallerName(caller.caller, functionName, callerDepth, searchDepth + 1);
+                    }
                 }
 
-                if (searchDepth < maxSearchDepth) {
-                    return getCallerName(caller.caller, functionName, searchDepth + 1);
-                }
-
-                return "unknown/0";
+                return "unknown/" + (callerDepth - 1);
             }
 
             function initializeProxies(origin, depth) {

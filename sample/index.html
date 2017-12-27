@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Title</title>
+<script src="vue.min.js"></script>
+</head>
+<body>
+
+<div id="app-6">
+    <p>{{ message }}</p>
+    <input v-model="message">
+</div>
+
+<script>
+    var app6 = new Vue({
+        el: '#app-6',
+        data: {
+            message: 'Hello Vue!'
+        }
+    });
+</script>
+<script>
+    var MainObj = {
+        parentFunc: function(callback, count) {
+            console.log("parentFunc");
+
+            this.childrenFunc(count);
+            if(typeof(callback) == "function") callback();
+        },
+        childrenFunc: function(count) {
+            console.log("childrenFunc");
+
+            childrenSubFunc(count, count);
+        }
+    };
+
+    function childrenSubFunc(a, b) {
+        return a*b;
+    }
+
+    function parentSubFunc(a) {
+        return a*a;
+    }
+
+    function ajaxTest(callback) {
+        var request = new XMLHttpRequest();
+        var url = "package.json";
+
+        request.open("GET", url);
+        request.addEventListener("load", function() {
+            if(request.status === 200) {
+                callback(request.responseText);
+            }
+        }, false);
+
+        request.send();
+    }
+
+    window.onload = function() {
+        MainObj.childrenFunc(5);
+
+        ajaxTest(function(text) {
+            parentSubFunc(10);
+            console.log(text);
+        });
+    }
+</script>
+
+<script src="profile.js"></script>
+
+</body>
+</html>

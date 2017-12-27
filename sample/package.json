@@ -1,0 +1,10 @@
+{
+  "title": "Web page tester",
+  "description": "",
+  "version": "5.3.0",
+  "mainUrl": "/plugin/webpagetest",
+  "mainTpl": "tpl/index.vm",
+  "resources" : [ "res/index.css", "res/fullstackbar.js", "res/index.js" ],
+  "thumbnails": [ "img/classic.png", "img/dark.png" ],
+  "i18n": [ "i18n/message_ko.properties", "i18n/message_en.properties" ]
+}
