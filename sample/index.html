@@ -3,23 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Title</title>
-<script src="vue.min.js"></script>
-</head>
-<body>
-
-<div id="app-6">
-    <p>{{ message }}</p>
-    <input v-model="message">
-</div>
-
-<script>
-    var app6 = new Vue({
-        el: '#app-6',
-        data: {
-            message: 'Hello Vue!'
-        }
-    });
-</script>
+<!--<script src="vue.min.js"></script>-->
+<script src="jquery-1.8.0.min.js"></script>
+<script src="profile.js"></script>
 <script>
     var MainObj = {
         parentFunc: function(callback, count) {
@@ -43,6 +29,14 @@
         return a*a;
     }
 
+    function callSelf(count) {
+        console.log("callSelf : " + count);
+
+        if(count > 0) {
+            callSelf(count - 1);
+        }
+    }
+
     function ajaxTest(callback) {
         var request = new XMLHttpRequest();
         var url = "package.json";
@@ -57,17 +51,34 @@
         request.send();
     }
 
-    window.onload = function() {
-        MainObj.childrenFunc(5);
+    JSProfiler.setup({ exceptObjects: [ "jQuery" ] });
+    JSProfiler.start();
 
+    $(document).ready(function() {
         ajaxTest(function(text) {
-            parentSubFunc(10);
+            MainObj.childrenFunc(5);
             console.log(text);
         });
-    }
+    });
 </script>
 
-<script src="profile.js"></script>
+</head>
+<body>
+
+<a href="javascript:window.open('viewer/index.html', '', 'width=1024, height=768')">Show profiles</a>
+<!--<div id="app-6">-->
+    <!--<p>{{ message }}</p>-->
+    <!--<input v-model="message">-->
+<!--</div>-->
+<!--<script>-->
+    <!--var app6 = new Vue({-->
+        <!--el: '#app-6',-->
+        <!--data: {-->
+            <!--message: 'Hello Vue!'-->
+        <!--}-->
+    <!--});-->
+<!--</script>-->
+
 
 </body>
 </html>
