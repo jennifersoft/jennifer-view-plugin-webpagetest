@@ -68,7 +68,7 @@ jui.ready([ "ui.combo", "grid.xtable", "chart.builder", "ui.tab" ], function(com
     });
 
     calltreeTable = xtable("#ext_calltree", {
-        fields: [ "functionName", "responseTime", "parentName", null, null ],
+        fields: [ "functionName", "responseTime", "parentName", null, null, "callCount" ],
         resize: true,
         width: tableWidth,
         scrollWidth: tableWidth,
@@ -448,38 +448,25 @@ function calculateTreeData(profiles) {
             a.startTime - b.startTime : a.callerDepth - b.callerDepth;
     });
 
-    console.table(profiles);
-
     var indexMap = {
-        "global/0": "0",
-        "unknown/0": "0.0"
+        "global/0": "0"
     };
     var indexCount = {
-        "global/0": 1,
-        "unknown/0": 0
+        "global/0": 0
     };
     var data = [{
         index: "0",
         data: {
-            functionName: "global/0",
-            responseTime: -1,
-            parentName: "",
+            functionName: "global",
+            calleeName: "global/0",
             callerName: null,
             startTime: null,
-            parameterList: []
+            parameterList: [],
+            responseTime: -1,
+            parentName: "",
+            callCount: 1
         },
         type: "open"
-    }, {
-        index: "0.0",
-        data: {
-            functionName: "unknown/0",
-            responseTime: -1,
-            parentName: "",
-            callerName: null,
-            startTime: null,
-            parameterList: []
-        },
-        type: "fold"
     }];
 
     // limit만큼만 트리데이터 찾기 시도함.
@@ -496,8 +483,8 @@ function calculateTreeData(profiles) {
             }
 
             if(index != null) {
-                indexMap[row.functionName] = index;
-                indexCount[row.functionName] = 0;
+                indexMap[row.calleeName] = index;
+                indexCount[row.calleeName] = 0;
 
                 originData.push({
                     index: index,

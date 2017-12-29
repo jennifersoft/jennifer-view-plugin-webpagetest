@@ -120,6 +120,7 @@
                     <th>Package</th>
                     <th>Parameters</th>
                     <th>Return</th>
+                    <th>Calls</th>
                 </tr>
                 </thead>
                 <tbody></tbody>
@@ -139,18 +140,18 @@
                     <!= functionName !>
                 </td>
                 <td>
-                    <!= (startTime != null) ? getServerMoment(startTime).format("mm:ss.SSS") : "" !>
-                    <!= (responseTime == -1) ? "" : ("(" + responseTime + ")") !>
+                    <!= (responseTime == -1) ? "" : responseTime + "ms" !>
                 </td>
                 <td><!= parentName !></td>
                 <td title="<!= paramStr !>"><!= paramStr !></td>
                 <td title="<!= returnStr !>"><!= returnStr !></td>
+                <td><!= callCount !></td>
             </tr>
         </script>
 
         <script data-jui="#ext_calltree" data-tpl="none" type="text/template">
             <tr>
-                <td colspan="5">No entries</td>
+                <td colspan="6">No entries</td>
             </tr>
         </script>
     </div>
